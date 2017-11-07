@@ -1,0 +1,39 @@
+【功能】
+MySQL高可用和负载均衡调度
+
+【目录结构】
+├── check_lvs_multi.pl        #  单机多实例读vip检查程序
+├── check_lvs.sh              #  单机单实例读负载均衡
+├── check_mysql_multi.pl      #  单机多实例写vip检查程序  
+├── check_realserver.sh       #  realserver健康检查入口
+├── check_sb.pl               #  keepalived脑裂处理程序
+├── common
+│   ├── CheckWvip.pm          #  检查写vip模块
+│   ├── Demote.pm             #  降级模块
+│   ├── InitSlave.pm          #  调整从库指向新主库模块
+│   ├── ManagerUtil.pm        #  工具包
+│   ├── MysqlConn.pm          #  数据库连接模块
+│   ├── MysqlManager.pm       #  mysql管理模块
+│   ├── OpStatus.pm           #  打印状态工具
+│   └── Promote.pm            #  提升模块
+├── demote.pl                 #  降级入口脚本
+├── etc  
+│   └── Myconfig.pm           #  配置文件
+├── haconf                    #  高可用全局配置文件 
+├── install
+│   ├── changelog
+│   ├── check_mysql_ha.sh
+│   ├── ha_manager_mutil.sh   # 单机多实例自动化管理脚本
+│   ├── ha_manager.sh         # 单机单实例自动化管理脚本
+│   ├── init.sql
+│   ├── install.txt
+│   ├── log4sh
+│   ├── lvs_real
+│   └── perl
+├── keepalived.conf           # keepalived配置文件
+├── notify.sh                 # keepalived回调接口
+├── ping_realserver.pl        # realserver监健康检查
+├── promote.pl                # 提升入口脚本
+├── status 
+│   └── opStatus              # 高可用切换状态记录
+└── version                   # 高可用版本

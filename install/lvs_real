@@ -1,0 +1,100 @@
+#!/bin/bash
+#
+# Description:  start and stop vip for lvs realserver
+# Author:
+#   zhaoyunbo
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+. /etc/rc.d/init.d/functions
+CFG=/etc/sysconfig/lvs_real
+VIP=$2
+
+function enable_vip()
+{
+  vip=$1
+  dev=lo:${vip##*.}
+  /sbin/ifconfig $dev $vip broadcast $vip netmask 255.255.255.255 up
+  /sbin/route add -host $vip dev $dev
+  lines=`cat $CFG |wc -l`
+
+  echo "1" > /proc/sys/net/ipv4/conf/lo/arp_ignore
+  echo "2" > /proc/sys/net/ipv4/conf/lo/arp_announce
+  echo "1" > /proc/sys/net/ipv4/conf/all/arp_ignore
+  echo "2" > /proc/sys/net/ipv4/conf/all/arp_announce
+  touch /var/lock/subsys/lvs_real
+}
+
+function disable_vip()
+{
+  vip=$1
+  dev=lo:${vip##*.}
+  /sbin/route delete $vip
+  /sbin/ifconfig $dev down
+}
+
+if test -f $CFG; then
+  echo "Load config : $CFG" 
+else
+  touch $CFG
+fi
+
+if [ "$1" = "addcfg" ]; then
+  [ x$VIP = x ] && { echo "vip is null"; exit 1; }
+  cnf_lines=`cat $CFG |grep -c "$VIP"`
+  if [ $cnf_lines -eq 0 ];then
+  	echo "VIP=$VIP" >>$CFG
+  fi
+  exit
+elif [ "$1" = "delcfg" ]; then
+  [ -f "$CFG" ] && sed -i "/^VIP=$VIP$/d" $CFG
+  exit
+fi
+
+if [ x$VIP = x ]; then
+  if test -f $CFG; then
+    . $CFG || { echo "load error: $CFG"; exit 2; }
+  else
+    exit
+  fi
+fi
+
+case "$1" in
+  startone)
+    echo -n "Start LVS on $VIP RealServer..."
+    cnf_lines=`cat $CFG |grep -c "$VIP"`
+    if [ $cnf_lines -eq 0 ];then
+  	echo "VIP=$VIP" >>$CFG
+    fi
+    enable_vip $VIP
+    echo
+    ;;
+  stopone)
+    echo -n "Stop LVS on $VIP RealServer..."
+    disable_vip $VIP
+    echo
+    ;;
+  stopall)
+    echo -n "Stop ALL LVS RealServers..."
+    for line in `cat $CFG`
+    do 
+        ip=`echo $line |cut -d "=" -f 2`
+        disable_vip $ip
+    done 
+    echo "0" > /proc/sys/net/ipv4/conf/lo/arp_ignore
+    echo "0" > /proc/sys/net/ipv4/conf/lo/arp_announce
+    echo "0" > /proc/sys/net/ipv4/conf/all/arp_ignore
+    echo "0" > /proc/sys/net/ipv4/conf/all/arp_announce
+    rm -f /var/lock/subsys/lvs_real
+    echo 
+    ;;
+  status)
+    [ -f $CFG ] && grep "^VIP=" $CFG
+    ip -o addr show |grep " $VIP/"
+    route |grep "^$VIP"
+    ;;
+  *)
+    echo "Usage: $0 {status|addcfg|delcfg|startone|stopone} [VIP]"
+    echo "Usage: $0 {stopall}"
+    exit 1
+esac
+

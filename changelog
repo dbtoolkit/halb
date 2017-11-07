@@ -1,0 +1,12 @@
+1.0.0 -
+  * create
+1.0.1 -
+  * add check_sb.pl
+1.0.2 -
+  * release
+1.2.0 -
+  * support multi instance
+  * parallel health check
+  * parallel promote
+  * parallel demote
+  * optimize ping gateway

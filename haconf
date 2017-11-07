@@ -1,0 +1,5 @@
+#mode dbType   dbHome    sidorport   dgGroup        haGroup    gotoFault   vrrpInstance   vip            realserverGroup
+N     mysql    /usr/    3306    null    10.100.50.1,10.100.50.2    N     vi_mysql_92     10.100.50.92    10.100.50.38
+N     mysql    /usr/    3316    null    10.100.50.1,10.100.50.2    N     vi_mysql_92     10.100.50.92    10.100.50.38
+N     lvs      /usr/    3306    null    10.100.50.1,10.100.50.2    N     vi_lvs_93       10.100.50.93    10.100.50.38
+N     lvs      /usr/    3316    null    10.100.50.1,10.100.50.2    N     vi_lvs_93       10.100.50.93    10.100.50.38

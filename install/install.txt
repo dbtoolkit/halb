@@ -1,0 +1,43 @@
+1. 安装keepalived、ipvsadm(主从库keepalived版本必需一样)
+rpm -qa | egrep -i \(keepalived\|ipvsadm\)
+yum -y install keepalived && yum -y install ipvsadm
+
+2. 安装perl包
+for i in `cat /etc/keepalived/install/perl`;do yum -y install $i;done
+
+安装情况检查:
+rpm -qa | egrep -i \(perl-DBI-\|perl-DBD-MySQL\|perl-Log-Log4perl\|perl-Parallel-ForkManager\)
+
+3. 安装HALB
+tar -zxvf HALB-1.2.0.tar.gz && cp -r HALB-1.2.0/* /etc/keepalived
+chmod -R +x /etc/keepalived
+[ -f /etc/keepalived/keepalived.conf ] && chmod -x /etc/keepalived/keepalived.conf
+[ -f /etc/keepalived/haconf ] && chmod -x /etc/keepalived/haconf
+chmod -x /etc/keepalived/changelog
+chmod -x /etc/keepalived/version
+
+4. 创建切换日志信息表和授权
+mysql < init.sql
+
+5. 创建haconf配置文件
+
+6. 创建keepalived.conf文件
+cd /etc/keepalived/install/ 
+./ha_manager_multi.sh --create --interface=bond0
+
+检查keepalived.conf配置文件的网卡接口是否匹配、routeid是否重复
+
+7. 修改主从库haconf的维护模式为Y（必需）
+
+8. 先启动主库主机keepalived
+/etc/init.d/keepalived start
+
+9. 等待主库主机写vip/读vip启动后，接着启动从库主机keepalived
+/etc/init.d/keepalived start
+
+10. 修改主从库haconf维护模式为N，进入正常模式
+
+11. 切换读vip到从库主机
+修改haconf中的dbType为"lvs"的其中一行gotoFault为Y
+
+12. 等待从库接管读vip后，再把主库的dbType为"lvs"的gotoFault为N
